@@ -1,0 +1,1 @@
+export { CenterByAnima } from "./CenterByAnima";
