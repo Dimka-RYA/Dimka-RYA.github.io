@@ -1,5 +1,6 @@
 import React from "react";
 import { Layout } from "../../components/Layout";
+import { Link } from "react-router-dom";
 
 export const About = (): JSX.Element => {
   // Team members data with names, positions, and photos
@@ -36,22 +37,27 @@ export const About = (): JSX.Element => {
 
   return (
     <Layout showHeroBanner={false}>
-      <div className="w-full max-w-[1160px] mx-auto py-10">
-        <h1 className="font-['Nunito',Helvetica] font-bold text-4xl text-black mb-8">О компании</h1>
+      <div className="w-full max-w-[1160px] mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12 md:mb-16">
+          <h1 className="font-['Nunito',Helvetica] font-bold text-3xl sm:text-4xl md:text-5xl text-gray-800 tracking-tight">
+            О компании
+          </h1>
+          <div className="mt-3 h-1 w-20 bg-[#87ceeb] mx-auto rounded-full"></div>
+        </div>
         
-        <div className="flex flex-col md:flex-row gap-10 mb-12">
-          <div className="md:w-1/2">
-            <p className="font-['Nunito',Helvetica] text-lg text-gray-700 mb-6">
+        <div className="flex flex-col md:flex-row md:items-stretch items-start gap-8 md:gap-12 mb-12 md:mb-16">
+          <div className="md:w-1/2 bg-white p-6 sm:p-8 rounded-lg shadow-lg order-2 md:order-1 flex flex-col justify-center">
+            <p className="font-['Nunito',Helvetica] text-base sm:text-lg text-gray-700 leading-relaxed mb-6">
               ИП Масляков - компания с многолетним опытом работы в сфере ремонта и отделки помещений. Мы предоставляем широкий спектр услуг для частных и коммерческих клиентов в городе Кстово и области.
             </p>
-            <p className="font-['Nunito',Helvetica] text-lg text-gray-700 mb-6">
+            <p className="font-['Nunito',Helvetica] text-base sm:text-lg text-gray-700 leading-relaxed mb-6">
               Наша команда состоит из опытных специалистов, которые постоянно совершенствуют свои навыки и следят за последними тенденциями в области ремонта и отделки.
             </p>
-            <p className="font-['Nunito',Helvetica] text-lg text-gray-700">
+            <p className="font-['Nunito',Helvetica] text-base sm:text-lg text-gray-700 leading-relaxed">
               Мы гордимся качеством нашей работы и стремимся к полному удовлетворению потребностей клиентов, предлагая индивидуальный подход к каждому проекту.
             </p>
           </div>
-          <div className="md:w-1/2 h-[350px] rounded-lg overflow-hidden">
+          <div className="md:w-1/2 w-full h-[250px] sm:h-[300px] md:h-auto md:flex rounded-lg overflow-hidden shadow-lg order-1 md:order-2">
             <img 
               src="/image-1.png" 
               alt="Фото компании" 
@@ -134,9 +140,12 @@ export const About = (): JSX.Element => {
           <p className="font-['Nunito',Helvetica] text-lg text-gray-700 mb-6">
             Свяжитесь с нами любым удобным способом, и мы ответим на все ваши вопросы.
           </p>
-          <button className="bg-[#87ceeb] text-white font-semibold py-3 px-8 rounded-md hover:bg-[#5fb4d8] transition-colors">
+          <Link 
+            to="/contacts" 
+            className="inline-block bg-[#87ceeb] text-white font-semibold py-3 px-8 rounded-md hover:bg-[#5fb4d8] transition-colors duration-300 hover:shadow-lg transform hover:-translate-y-0.5 text-center"
+          >
             Связаться с нами
-          </button>
+          </Link>
         </div>
       </div>
     </Layout>

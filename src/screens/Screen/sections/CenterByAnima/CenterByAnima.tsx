@@ -65,10 +65,13 @@ export const CenterByAnima = (): JSX.Element => {
   ];
 
   return (
-    <section className="w-full max-w-[1172px] mx-auto py-16">
-      <h2 className="text-[40px] font-extrabold text-black text-center mb-16 font-['Nunito',Helvetica] tracking-[0]">
-        НАШИ УСЛУГИ
-      </h2>
+    <section className="w-full max-w-[1172px] mx-auto py-16 px-4">
+      <div className="text-center mb-12 md:mb-16">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 font-['Nunito',Helvetica] tracking-tight">
+          НАШИ УСЛУГИ
+        </h2>
+        <div className="mt-3 h-1 w-20 bg-[#87ceeb] mx-auto rounded-full"></div>
+      </div>
 
       <div className="flex flex-col gap-[50px]">
         {services.map((service) => (
@@ -90,18 +93,18 @@ export const CenterByAnima = (): JSX.Element => {
                 className={`absolute inset-0 bg-[#00000099] z-10 transition-opacity duration-300 ease-in-out
                   ${hoveredCard === service.id ? "opacity-100" : "opacity-0"}`} 
               />
-              <CardContent className="relative z-20 h-full p-0">
+              <CardContent className={`relative z-20 h-full p-0 ${hoveredCard === service.id ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                 <div className="p-[25px] flex flex-col justify-between h-full">
                   <h3 
-                    className={`w-96 font-black text-white text-2xl font-['Nunito',Helvetica] tracking-[0] leading-normal
+                    className={`w-full font-black text-white text-xl sm:text-2xl font-['Nunito',Helvetica] tracking-[0] leading-normal
                       transition-all duration-300 ease-in-out ${hoveredCard === service.id ? "opacity-100 transform-none" : "opacity-0 -translate-y-4"}`}
                   >
                     {service.title}
                   </h3>
-                  <div className="w-[375px]">
+                  <div className="w-full sm:w-[375px]">
                     <Link to={`/services/${serviceSlugMap[service.id]}`}>
                       <Button 
-                        className={`w-[373px] h-[61px] bg-[#5aabcc] rounded-[15px] font-bold text-white text-2xl font-['Nunito',Helvetica]
+                        className={`w-full h-[50px] sm:h-[61px] bg-[#5aabcc] rounded-[15px] font-bold text-white text-xl sm:text-2xl font-['Nunito',Helvetica]
                           transition-all duration-300 ease-in-out ${hoveredCard === service.id ? "opacity-100 transform-none" : "opacity-0 translate-y-4"}`}
                       >
                         Подробнее

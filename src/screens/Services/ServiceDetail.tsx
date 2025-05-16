@@ -7,6 +7,9 @@ import { Textarea } from "../../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { Check, Clock, Star, MapPin, Phone, ArrowLeft } from "lucide-react";
 
+// Формспри - замените на ваш формспри ID после регистрации
+const FORMSPREE_FORM_ID = "xpwdbdkj"; // Пример ID, нужно заменить на свой
+
 // Интерфейс для типа услуги
 interface ServiceType {
   id: number;
@@ -183,23 +186,56 @@ export const ServiceDetail = (): JSX.Element => {
   };
 
   // Обработчик отправки формы
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Данные формы отправлены:', formData);
-    setIsFormSubmitted(true);
     
-    // Сброс формы через 3 секунды после успешной отправки
-    setTimeout(() => {
-      setIsFormSubmitted(false);
-      setFormData({
-        name: "",
-        phone: "",
-        email: "",
-        address: "",
-        message: "",
-        serviceOption: "standard"
+    try {
+      setIsFormSubmitted(true);
+      
+      // Формирование данных для отправки
+      const formDataToSend = {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email || 'Не указан',
+        address: formData.address || 'Не указан',
+        service: service?.title || 'Не указана',
+        serviceOption: formData.serviceOption,
+        message: formData.message || 'Без дополнительной информации',
+        _subject: `Заявка на услугу: ${service?.title || 'Не указана'}`,
+        _template: "table",
+        _captcha: "false"
+      };
+
+      // Отправка данных через Formspree
+      const response = await fetch(`https://formspree.io/f/${FORMSPREE_FORM_ID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formDataToSend)
       });
-    }, 3000);
+
+      if (!response.ok) {
+        throw new Error('Ошибка при отправке формы');
+      }
+      
+      // Сброс формы через 5 секунд после успешной отправки
+      setTimeout(() => {
+        setIsFormSubmitted(false);
+        setFormData({
+          name: "",
+          phone: "",
+          email: "",
+          address: "",
+          message: "",
+          serviceOption: "standard"
+        });
+      }, 5000);
+    } catch (error) {
+      console.error('Ошибка при отправке формы:', error);
+      alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте позже.');
+      setIsFormSubmitted(false);
+    }
   };
 
   // Если услуга не найдена

@@ -10,7 +10,7 @@ import { HeaderByAnima } from "./sections/HeaderByAnima";
 export const Screen = (): JSX.Element => {
   return (
     <div className="bg-white flex flex-col items-center w-full overflow-x-hidden">
-      <div className="bg-white w-full max-w-[1600px]">
+      <div className="bg-white w-full container">
         <HeaderByAnima />
         <CenterByAnima />
         <CenterWrapperByAnima />

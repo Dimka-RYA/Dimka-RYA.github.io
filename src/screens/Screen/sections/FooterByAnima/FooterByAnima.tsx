@@ -70,7 +70,7 @@ export const FooterByAnima = (): JSX.Element => {
                   <li key={index}>
                     <Link
                       to={link.href}
-                      className="font-normal text-white text-xs font-['Nunito',Helvetica] hover:text-[#87ceeb] transition-colors"
+                      className="font-normal text-white text-xs font-['Nunito',Helvetica] hover:text-[#87ceeb] transition-colors duration-300 hover:opacity-70"
                     >
                       {link.title}
                     </Link>
@@ -91,7 +91,7 @@ export const FooterByAnima = (): JSX.Element => {
                   <li key={index}>
                     <Link
                       to={link.href}
-                      className="font-normal text-white text-xs font-['Nunito',Helvetica] hover:text-[#87ceeb] transition-colors"
+                      className="font-normal text-white text-xs font-['Nunito',Helvetica] hover:text-[#87ceeb] transition-colors duration-300 hover:opacity-70"
                     >
                       {link.title}
                     </Link>
@@ -112,7 +112,7 @@ export const FooterByAnima = (): JSX.Element => {
                   <div className="mr-1.5 mt-0.5">{item.icon}</div>
                   <div>
                     {item.href ? (
-                      <a href={item.href} className="font-medium text-white text-xs font-['Nunito',Helvetica] hover:text-[#87ceeb] transition-colors">
+                      <a href={item.href} className="font-medium text-white text-xs font-['Nunito',Helvetica] hover:text-[#87ceeb] transition-colors duration-300 hover:opacity-70">
                         {item.value}
                       </a>
                     ) : (

@@ -83,7 +83,7 @@ export const DivWrapperByAnima = (): JSX.Element => {
       <div className="relative max-w-[1252px] mx-auto">
         <Carousel 
           setApi={setApi} 
-          className="w-full"
+          className="w-full relative px-4 sm:px-6 md:px-8 lg:px-14"
           opts={{
             align: "start",
             loop: true,
@@ -93,7 +93,7 @@ export const DivWrapperByAnima = (): JSX.Element => {
             {teamMembers.map((member, index) => (
               <CarouselItem
                 key={`${member.id}-${index}`}
-                className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+                className="pl-4 basis-full sm:basis-1/2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
               >
                 <Card className="h-[449px] bg-white rounded-[20px] border-[3px] border-solid border-[#87ceeb] overflow-hidden transition-all duration-300 hover:shadow-lg">
                   <CardContent className="p-0 h-full flex flex-col">
@@ -125,15 +125,15 @@ export const DivWrapperByAnima = (): JSX.Element => {
             ))}
           </CarouselContent>
           <CarouselPrevious 
-            className="absolute top-1/2 -translate-y-1/2 -left-14 lg:-left-20 w-12 h-12 bg-white rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-all duration-300 hover:scale-110"
+            className="absolute top-1/2 -translate-y-1/2 left-0 sm:-left-1 md:-left-2 lg:-left-3 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-all duration-300 hover:scale-110 z-10 flex items-center justify-center"
           >
-            <ChevronLeft className="w-8 h-8 text-[#87ceeb]" />
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#87ceeb]" />
           </CarouselPrevious>
           
           <CarouselNext 
-            className="absolute top-1/2 -translate-y-1/2 -right-14 lg:-right-20 w-12 h-12 bg-white rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-all duration-300 hover:scale-110"
+            className="absolute top-1/2 -translate-y-1/2 right-0 sm:-right-1 md:-right-2 lg:-right-3 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white rounded-full shadow-md hover:bg-gray-50 focus:outline-none transition-all duration-300 hover:scale-110 z-10 flex items-center justify-center"
           >
-            <ChevronRight className="w-8 h-8 text-[#87ceeb]" />
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#87ceeb]" />
           </CarouselNext>
         </Carousel>
       </div>
