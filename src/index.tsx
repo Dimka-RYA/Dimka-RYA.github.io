@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Screen } from "./screens/Screen/Screen";
 import { Services } from "./screens/Services/Services";
 import { ServiceDetail } from "./screens/Services/ServiceDetail";
@@ -12,7 +12,7 @@ import { DatabaseProvider } from "./components/DatabaseProvider";
 createRoot(document.getElementById("app") as HTMLElement).render(
   <StrictMode>
     <DatabaseProvider>
-      <HashRouter>
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<Screen />} />
           <Route path="/services" element={<Services />} />
@@ -21,7 +21,7 @@ createRoot(document.getElementById("app") as HTMLElement).render(
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
-      </HashRouter>
+      </BrowserRouter>
     </DatabaseProvider>
   </StrictMode>,
 );
