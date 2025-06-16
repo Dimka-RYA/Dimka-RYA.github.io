@@ -6,8 +6,8 @@
   "description": "A website for a construction and renovation company",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && echo '/* /index.html 200' > dist/_redirects",
-    "vercel-build": "vite build && echo '/* /index.html 200' > dist/_redirects",
+    "build": "vite build && echo '/* /index.html 200' > dist/_redirects && echo '' > dist/.nojekyll",
+    "vercel-build": "vite build && echo '/* /index.html 200' > dist/_redirects && echo '' > dist/.nojekyll",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },

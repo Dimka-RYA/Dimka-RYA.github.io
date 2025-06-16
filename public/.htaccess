@@ -1,0 +1,20 @@
+# Правильные MIME-типы для JavaScript-модулей
+AddType application/javascript .js
+AddType application/javascript .mjs
+AddType text/javascript .js
+AddType text/javascript .mjs
+
+# Заголовки для кросс-доменных запросов
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+</IfModule>
+
+# Перенаправление всех запросов на index.html для SPA
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule> 
