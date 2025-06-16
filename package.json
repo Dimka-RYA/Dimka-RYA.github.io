@@ -6,8 +6,8 @@
   "description": "A website for a construction and renovation company",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "vercel-build": "vite build"
+    "build": "vite build && echo '/* /index.html 200' > dist/_redirects",
+    "vercel-build": "vite build && echo '/* /index.html 200' > dist/_redirects"
   },
   "dependencies": {
     "@radix-ui/react-navigation-menu": "^1.2.1",
