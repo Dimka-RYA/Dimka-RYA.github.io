@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, FormEvent } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Layout } from "../../components/Layout";
 import { Button } from "../../components/ui/button";
@@ -6,9 +6,7 @@ import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { Check, Clock, Star, MapPin, Phone, ArrowLeft } from "lucide-react";
-
-// Формспри - замените на ваш формспри ID после регистрации
-const FORMSPREE_FORM_ID = "xpwdbdkj"; // Пример ID, нужно заменить на свой
+import { saveFormSubmission } from "../../lib/supabase";
 
 // Интерфейс для типа услуги
 interface ServiceType {
@@ -32,7 +30,11 @@ export const ServiceDetail = (): JSX.Element => {
     message: "",
     serviceOption: "standard"
   });
-  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [formStatus, setFormStatus] = useState({
+    isSubmitting: false,
+    isSubmitted: false,
+    error: null as string | null
+  });
 
   // Данные о всех услугах (в реальном проекте эти данные могли бы приходить с бэкенда)
   const servicesData: Record<string, ServiceType> = {
@@ -186,271 +188,310 @@ export const ServiceDetail = (): JSX.Element => {
   };
 
   // Обработчик отправки формы
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
     
-    try {
-      setIsFormSubmitted(true);
-      
-      // Формирование данных для отправки
-      const formDataToSend = {
-        name: formData.name,
-        phone: formData.phone,
-        email: formData.email || 'Не указан',
-        address: formData.address || 'Не указан',
-        service: service?.title || 'Не указана',
-        serviceOption: formData.serviceOption,
-        message: formData.message || 'Без дополнительной информации',
-        _subject: `Заявка на услугу: ${service?.title || 'Не указана'}`,
-        _template: "table",
-        _captcha: "false"
-      };
-
-      // Отправка данных через Formspree
-      const response = await fetch(`https://formspree.io/f/${FORMSPREE_FORM_ID}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formDataToSend)
+    // Валидация формы
+    if (!formData.name || !formData.phone || !formData.email) {
+      setFormStatus({
+        isSubmitting: false,
+        isSubmitted: false,
+        error: 'Пожалуйста, заполните все обязательные поля'
       });
-
-      if (!response.ok) {
-        throw new Error('Ошибка при отправке формы');
+      return;
+    }
+    
+    setFormStatus({
+      isSubmitting: true,
+      isSubmitted: false,
+      error: null
+    });
+    
+    try {
+      console.log('Начинаем отправку заказа услуги в Supabase:', formData);
+      
+      if (!service) {
+        throw new Error('Услуга не найдена');
       }
       
-      // Сброс формы через 5 секунд после успешной отправки
+      // Отправка данных в Supabase
+      const result = await saveFormSubmission({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        message: formData.message,
+        type: 'service', // Тип формы - заказ услуги
+        service: service.title,
+        serviceOption: formData.serviceOption,
+        address: formData.address
+      });
+      
+      console.log('Результат отправки:', result);
+      
+      if (!result.success) {
+        console.error('Ошибка при отправке заказа:', result.error);
+        throw new Error(result.error ? (result.error as any).message || 'Ошибка при отправке заказа' : 'Ошибка при отправке заказа');
+      }
+      
+      // Успешная отправка
+      setFormStatus({
+        isSubmitting: false,
+        isSubmitted: true,
+        error: null
+      });
+      
+      // Сброс формы
+      setFormData({
+        name: '',
+        phone: '',
+        email: '',
+        message: '',
+        serviceOption: 'standard',
+        address: ''
+      });
+      
+      // Сброс статуса "отправлено" через 5 секунд
       setTimeout(() => {
-        setIsFormSubmitted(false);
-        setFormData({
-          name: "",
-          phone: "",
-          email: "",
-          address: "",
-          message: "",
-          serviceOption: "standard"
-        });
+        setFormStatus(prev => ({ ...prev, isSubmitted: false }));
       }, 5000);
-    } catch (error) {
-      console.error('Ошибка при отправке формы:', error);
-      alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте позже.');
-      setIsFormSubmitted(false);
+    } catch (error: any) {
+      // Обработка ошибки
+      console.error('Ошибка при отправке заказа:', error);
+      setFormStatus({
+        isSubmitting: false,
+        isSubmitted: false,
+        error: `Произошла ошибка при отправке заказа: ${error.message || 'Неизвестная ошибка'}. Пожалуйста, попробуйте позже.`
+      });
     }
   };
 
-  // Если услуга не найдена
+  // Если услуга не найдена, показываем сообщение об ошибке
   if (!service) {
     return (
-      <Layout showHeroBanner={false}>
-        <div className="w-full max-w-[1160px] mx-auto py-10">
-          <div className="text-center">
-            <h1 className="font-['Nunito',Helvetica] font-bold text-4xl text-black mb-4">Услуга не найдена</h1>
-            <p className="text-gray-600 mb-6">К сожалению, запрашиваемая услуга не существует.</p>
-            <Link to="/services" className="inline-flex items-center justify-center gap-2 bg-[#87ceeb] text-white font-semibold py-2 px-6 rounded-md hover:bg-[#5fb4d8] transition-colors">
-              <ArrowLeft size={16} />
-              Вернуться к услугам
-            </Link>
-          </div>
+      <Layout>
+        <div className="container mx-auto px-4 py-12 text-center">
+          <h1 className="text-3xl font-bold text-red-600 mb-4">Услуга не найдена</h1>
+          <p className="mb-6">Запрашиваемая услуга не существует или была удалена.</p>
+          <Link to="/services" className="text-blue-600 hover:underline flex items-center justify-center gap-2">
+            <ArrowLeft size={16} />
+            Вернуться к списку услуг
+          </Link>
         </div>
       </Layout>
     );
   }
 
   return (
-    <Layout showHeroBanner={false}>
-      <div className="w-full max-w-[1160px] mx-auto py-10">
-        {/* Навигационная цепочка */}
-        <div className="mb-6 flex items-center font-['Nunito',Helvetica] text-sm text-gray-500">
-          <Link to="/" className="hover:text-[#87ceeb] transition-colors">Главная</Link>
+    <Layout>
+      {/* Основной контент */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Хлебные крошки */}
+        <div className="flex items-center text-sm text-gray-500 mb-6">
+          <Link to="/" className="hover:text-[#87ceeb]">Главная</Link>
           <span className="mx-2">/</span>
-          <Link to="/services" className="hover:text-[#87ceeb] transition-colors">Услуги</Link>
+          <Link to="/services" className="hover:text-[#87ceeb]">Услуги</Link>
           <span className="mx-2">/</span>
-          <span className="text-[#87ceeb]">{service.title}</span>
+          <span className="text-gray-700">{service.title}</span>
         </div>
-
+        
         {/* Заголовок услуги */}
-        <h1 className="font-['Nunito',Helvetica] font-bold text-4xl text-black mb-6">{service.title}</h1>
-
-        {/* Верхний блок с изображением и кратким описанием */}
-        <div className="flex flex-col md:flex-row gap-8 mb-12">
-          <div className="w-full md:w-1/2 rounded-xl overflow-hidden shadow-lg">
-            <img 
-              src={service.image} 
-              alt={service.title} 
-              className="w-full h-[400px] object-cover"
-            />
-          </div>
-          <div className="w-full md:w-1/2 flex flex-col justify-between">
-            <div>
-              <h2 className="font-['Nunito',Helvetica] font-semibold text-2xl text-black mb-4">О услуге</h2>
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{service.title}</h1>
+          <div className="h-1 w-20 bg-[#87ceeb] rounded-full"></div>
+        </div>
+        
+        {/* Основная информация */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          <div className="lg:col-span-2">
+            <div className="relative rounded-lg overflow-hidden mb-6 h-80 md:h-96">
+              <img 
+                src={service.image} 
+                alt={service.title} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            
+            <div className="prose max-w-none mb-8">
               {service.fullDescription.map((paragraph, index) => (
-                <p key={index} className="font-['Nunito',Helvetica] text-gray-700 mb-4">
-                  {paragraph}
-                </p>
+                <p key={index} className="mb-4 text-gray-700">{paragraph}</p>
               ))}
             </div>
-            <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <div className="font-['Nunito',Helvetica] font-bold text-2xl text-[#87ceeb]">
-                  {service.price}
-                </div>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <Star key={star} size={16} fill="#FFD700" color="#FFD700" />
-                  ))}
-                </div>
+            
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8">
+              <h3 className="text-xl font-semibold mb-4">Преимущества нашей услуги</h3>
+              <ul className="space-y-3">
+                {service.benefits.map((benefit, index) => (
+                  <li key={index} className="flex items-start">
+                    <div className="flex-shrink-0 w-5 h-5 bg-[#87ceeb] rounded-full flex items-center justify-center mt-1 mr-3">
+                      <Check size={12} className="text-white" />
+                    </div>
+                    <span className="text-gray-700">{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-xl font-semibold mb-4">Галерея работ</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {service.gallery.map((image, index) => (
+                  <div key={index} className="rounded-lg overflow-hidden h-48">
+                    <img 
+                      src={image} 
+                      alt={`${service.title} - изображение ${index + 1}`} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
               </div>
-              <Button 
-                className="w-full bg-[#87ceeb] hover:bg-[#5fb4d8] transition-colors text-white font-bold py-3 rounded-xl"
-                onClick={() => document.getElementById('order-form')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Заказать услугу
-              </Button>
             </div>
           </div>
-        </div>
-
-        {/* Преимущества услуги */}
-        <div className="mb-12">
-          <h2 className="font-['Nunito',Helvetica] font-semibold text-2xl text-black mb-6">Преимущества</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {service.benefits.map((benefit, index) => (
-              <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                <div className="bg-[#87ceeb] rounded-full p-1 mt-1">
-                  <Check size={16} className="text-white" />
-                </div>
-                <p className="font-['Nunito',Helvetica] text-gray-700">{benefit}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Форма заказа */}
-        <div id="order-form" className="bg-gray-50 p-8 rounded-xl shadow-md">
-          <h2 className="font-['Nunito',Helvetica] font-semibold text-2xl text-black mb-6 text-center">Заказать услугу</h2>
           
-          {isFormSubmitted ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check className="text-green-600" size={24} />
-              </div>
-              <h3 className="font-['Nunito',Helvetica] font-semibold text-xl text-green-800 mb-2">Заявка успешно отправлена!</h3>
-              <p className="text-green-700">Наш менеджер свяжется с вами в ближайшее время для уточнения деталей.</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="block font-['Nunito',Helvetica] font-medium text-gray-700">Ваше имя *</label>
-                  <Input 
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full h-12 rounded-lg border-2 border-[#87ceeb] focus:ring-2 focus:ring-[#87ceeb] focus:ring-opacity-50"
-                    placeholder="Иван Иванов"
-                  />
+          <div>
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm sticky top-24">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold">Стоимость</h3>
+                  <span className="text-lg font-bold text-[#87ceeb]">{service.price}</span>
                 </div>
-                <div className="space-y-2">
-                  <label className="block font-['Nunito',Helvetica] font-medium text-gray-700">Телефон *</label>
-                  <Input 
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full h-12 rounded-lg border-2 border-[#87ceeb] focus:ring-2 focus:ring-[#87ceeb] focus:ring-opacity-50"
-                    placeholder="+7 (___) ___-__-__"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block font-['Nunito',Helvetica] font-medium text-gray-700">Email</label>
-                  <Input 
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full h-12 rounded-lg border-2 border-[#87ceeb] focus:ring-2 focus:ring-[#87ceeb] focus:ring-opacity-50"
-                    placeholder="example@mail.ru"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block font-['Nunito',Helvetica] font-medium text-gray-700">Адрес объекта</label>
-                  <Input 
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className="w-full h-12 rounded-lg border-2 border-[#87ceeb] focus:ring-2 focus:ring-[#87ceeb] focus:ring-opacity-50"
-                    placeholder="г. Кстово, ул. Ленина, д. 10"
-                  />
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <Clock size={18} className="text-gray-500 mr-2" />
+                    <span className="text-sm text-gray-700">Срок выполнения: 5-10 дней</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Star size={18} className="text-gray-500 mr-2" />
+                    <span className="text-sm text-gray-700">Гарантия качества</span>
+                  </div>
+                  <div className="flex items-center">
+                    <MapPin size={18} className="text-gray-500 mr-2" />
+                    <span className="text-sm text-gray-700">Выезд на объект</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone size={18} className="text-gray-500 mr-2" />
+                    <span className="text-sm text-gray-700">Бесплатная консультация</span>
+                  </div>
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <label className="block font-['Nunito',Helvetica] font-medium text-gray-700">Тип услуги</label>
-                <Select 
-                  value={formData.serviceOption}
-                  onValueChange={handleSelectChange}
-                >
-                  <SelectTrigger className="w-full h-12 rounded-lg border-2 border-[#87ceeb] focus:ring-2 focus:ring-[#87ceeb] focus:ring-opacity-50">
-                    <SelectValue placeholder="Выберите тип услуги" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="standard">Стандартный пакет</SelectItem>
-                    <SelectItem value="premium">Премиум пакет</SelectItem>
-                    <SelectItem value="custom">Индивидуальный заказ</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div id="order-form" className="p-6">
+                <h2 className="font-['Nunito',Helvetica] font-semibold text-2xl text-black mb-6 text-center">Заказать услугу</h2>
+                
+                {formStatus.isSubmitted ? (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Check size={24} className="text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-medium text-green-800 mb-2">Заявка отправлена!</h3>
+                    <p className="text-green-700">Мы свяжемся с вами в ближайшее время для уточнения деталей.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {formStatus.error && (
+                      <div className="bg-red-50 border border-red-200 p-4 rounded-md">
+                        <p className="text-red-700 text-sm">{formStatus.error}</p>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                        Ваше имя <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Иван Иванов"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                        Телефон <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        placeholder="+7 (___) ___-__-__"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        Email <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="example@mail.ru"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                        Адрес объекта
+                      </label>
+                      <Input
+                        id="address"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                        placeholder="г. Москва, ул. Примерная, д. 1"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="serviceOption" className="block text-sm font-medium text-gray-700 mb-1">
+                        Вариант услуги
+                      </label>
+                      <Select 
+                        value={formData.serviceOption} 
+                        onValueChange={handleSelectChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Выберите вариант" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="standard">Стандартный пакет</SelectItem>
+                          <SelectItem value="premium">Премиум пакет</SelectItem>
+                          <SelectItem value="custom">Индивидуальный заказ</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                        Дополнительная информация
+                      </label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        placeholder="Опишите ваши пожелания или задайте вопросы..."
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-[#87ceeb] hover:bg-[#5fb4d8]"
+                      disabled={formStatus.isSubmitting}
+                    >
+                      {formStatus.isSubmitting ? "Отправка..." : "Заказать услугу"}
+                    </Button>
+                  </form>
+                )}
               </div>
-              
-              <div className="space-y-2">
-                <label className="block font-['Nunito',Helvetica] font-medium text-gray-700">Дополнительная информация</label>
-                <Textarea 
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  className="w-full min-h-[120px] rounded-lg border-2 border-[#87ceeb] focus:ring-2 focus:ring-[#87ceeb] focus:ring-opacity-50"
-                  placeholder="Опишите ваши пожелания, требования или вопросы..."
-                />
-              </div>
-              
-              <Button 
-                type="submit"
-                className="w-full bg-[#87ceeb] hover:bg-[#5fb4d8] transition-colors text-white font-bold py-4 rounded-xl"
-              >
-                Отправить заявку
-              </Button>
-
-              <div className="text-center text-sm text-gray-500 mt-4">
-                <p>Нажимая на кнопку, вы соглашаетесь с нашей политикой конфиденциальности</p>
-              </div>
-            </form>
-          )}
-        </div>
-
-        {/* Контактная информация */}
-        <div className="mt-12 bg-white p-6 rounded-xl shadow-sm">
-          <h2 className="font-['Nunito',Helvetica] font-semibold text-2xl text-black mb-6 text-center">Остались вопросы?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-[#e6f7ff] rounded-full flex items-center justify-center mb-4">
-                <Phone className="text-[#87ceeb]" size={20} />
-              </div>
-              <h3 className="font-['Nunito',Helvetica] font-medium text-gray-800 mb-1">Позвоните нам</h3>
-              <p className="text-[#87ceeb] font-medium">+7 (831) 216-61-49</p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-[#e6f7ff] rounded-full flex items-center justify-center mb-4">
-                <MapPin className="text-[#87ceeb]" size={20} />
-              </div>
-              <h3 className="font-['Nunito',Helvetica] font-medium text-gray-800 mb-1">Наш адрес</h3>
-              <p className="text-gray-600">г. Кстово, д. 5 А, оф.42</p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-[#e6f7ff] rounded-full flex items-center justify-center mb-4">
-                <Clock className="text-[#87ceeb]" size={20} />
-              </div>
-              <h3 className="font-['Nunito',Helvetica] font-medium text-gray-800 mb-1">Режим работы</h3>
-              <p className="text-gray-600">Пн-Пт: 9:00 - 18:00</p>
             </div>
           </div>
         </div>

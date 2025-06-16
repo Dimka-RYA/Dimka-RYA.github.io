@@ -4,6 +4,7 @@ import { Input } from "../../../../components/ui/input";
 import { Button } from "../../../../components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../../../components/ui/select";
 import { ChevronDownIcon, MapPin, Phone, Mail, Clock } from "lucide-react";
+import { saveFormSubmission } from "../../../../lib/supabase";
 
 // Формспри - замените на ваш формспри ID после регистрации
 const FORMSPREE_FORM_ID = "xpwdbdkj"; // Пример ID, нужно заменить на свой
@@ -77,28 +78,23 @@ export const BottomByAnima = (): JSX.Element => {
       // Находим название услуги по выбранному значению
       const selectedService = serviceOptions.find(opt => opt.value === formData.service);
       
-      // Формирование данных для отправки
-      const formDataToSend = {
+      console.log('Начинаем отправку формы в Supabase');
+      
+      // Отправка данных в Supabase
+      const result = await saveFormSubmission({
         name: formData.name,
+        phone: "", // Добавляем пустое поле телефона, так как оно обязательное в схеме
         email: formData.email,
-        service: selectedService?.label || 'Не указана',
-        message: 'Заявка с карты на странице "Контакты"',
-        _subject: `Быстрая заявка: ${selectedService?.label || 'Услуга не указана'}`,
-        _template: "table",
-        _captcha: "false"
-      };
-
-      // Отправка данных через Formspree
-      const response = await fetch(`https://formspree.io/f/${FORMSPREE_FORM_ID}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formDataToSend)
+        message: 'Заявка с карты на главной странице',
+        type: 'quick', // Тип формы - быстрая заявка
+        service: selectedService?.label || 'Не указана'
       });
-
-      if (!response.ok) {
-        throw new Error('Ошибка при отправке формы');
+      
+      console.log('Результат отправки:', result);
+      
+      if (!result.success) {
+        console.error('Ошибка при отправке формы:', result.error);
+        throw new Error(result.message || 'Ошибка при отправке формы');
       }
       
       // Сброс формы через 5 секунд

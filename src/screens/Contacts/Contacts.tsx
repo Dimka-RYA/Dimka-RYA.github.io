@@ -1,6 +1,7 @@
 import React, { useEffect, useState, FormEvent } from "react";
 import { Layout } from "../../components/Layout";
 import { MailIcon, MapPinIcon, PhoneIcon, ClockIcon } from "lucide-react";
+import { saveFormSubmission } from "../../lib/supabase";
 
 // Формспри - замените на ваш формспри ID после регистрации
 const FORMSPREE_FORM_ID = "xpwdbdkj"; // Пример ID, нужно заменить на свой
@@ -35,7 +36,7 @@ export const Contacts = (): JSX.Element => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    // Проверка заполненности обязательных полей
+    // Валидация формы
     if (!formData.name || !formData.phone || !formData.email) {
       setFormStatus({
         isSubmitting: false,
@@ -52,25 +53,21 @@ export const Contacts = (): JSX.Element => {
     });
 
     try {
-      // Отправка данных через Formspree
-      const response = await fetch(`https://formspree.io/f/${FORMSPREE_FORM_ID}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email,
-          message: formData.message,
-          _subject: `Новая заявка от ${formData.name}`,
-          _template: "table",
-          _captcha: "false"
-        })
+      console.log('Начинаем отправку формы в Supabase:', formData);
+      // Отправка данных в Supabase
+      const result = await saveFormSubmission({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        message: formData.message,
+        type: 'contact' // Тип формы - контактная форма
       });
 
-      if (!response.ok) {
-        throw new Error('Ошибка при отправке формы');
+      console.log('Результат отправки:', result);
+
+      if (!result.success) {
+        console.error('Ошибка при отправке формы:', result.error);
+        throw new Error(result.error ? (result.error as any).message || 'Ошибка при отправке формы' : 'Ошибка при отправке формы');
       }
 
       // Успешная отправка
@@ -92,13 +89,13 @@ export const Contacts = (): JSX.Element => {
       setTimeout(() => {
         setFormStatus(prev => ({ ...prev, isSubmitted: false }));
       }, 5000);
-    } catch (error) {
+    } catch (error: any) {
       // Обработка ошибки
       console.error('Ошибка при отправке формы:', error);
       setFormStatus({
         isSubmitting: false,
         isSubmitted: false,
-        error: 'Произошла ошибка при отправке сообщения. Пожалуйста, попробуйте позже.'
+        error: `Произошла ошибка при отправке сообщения: ${error.message || 'Неизвестная ошибка'}. Пожалуйста, попробуйте позже.`
       });
     }
   };

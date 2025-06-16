@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "../../components/Layout";
+import { saveFormSubmission } from "../../lib/supabase";
 
 // Формспри - ID формы
 const FORMSPREE_FORM_ID = "xpwdbdkj";
@@ -83,24 +84,22 @@ export const Services = (): JSX.Element => {
     try {
       setIsSubmitting(true);
       
-      // Отправка данных через Formspree
-      const response = await fetch(`https://formspree.io/f/${FORMSPREE_FORM_ID}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: consultationData.name,
-          email: consultationData.email,
-          message: 'Запрос консультации с страницы "Услуги"',
-          _subject: `Запрос консультации от ${consultationData.name}`,
-          _template: "table",
-          _captcha: "false"
-        })
+      console.log('Начинаем отправку запроса консультации в Supabase');
+      
+      // Отправка данных в Supabase
+      const result = await saveFormSubmission({
+        name: consultationData.name,
+        phone: "", // Добавляем пустое поле телефона, так как оно обязательное в схеме
+        email: consultationData.email,
+        message: 'Запрос консультации с страницы "Услуги"',
+        type: 'consultation' // Тип формы - запрос консультации
       });
-
-      if (!response.ok) {
-        throw new Error('Ошибка при отправке формы');
+      
+      console.log('Результат отправки:', result);
+      
+      if (!result.success) {
+        console.error('Ошибка при отправке запроса:', result.error);
+        throw new Error(result.message || 'Ошибка при отправке запроса');
       }
       
       // Успешная отправка
@@ -116,7 +115,7 @@ export const Services = (): JSX.Element => {
         setIsSubmitted(false);
       }, 5000);
     } catch (error) {
-      console.error('Ошибка при отправке формы:', error);
+      console.error('Ошибка при отправке запроса консультации:', error);
       alert('Произошла ошибка при отправке запроса. Пожалуйста, попробуйте позже.');
       setIsSubmitting(false);
     }
