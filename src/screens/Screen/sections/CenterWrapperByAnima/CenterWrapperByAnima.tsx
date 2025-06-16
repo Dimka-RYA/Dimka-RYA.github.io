@@ -6,16 +6,16 @@ export const CenterWrapperByAnima = (): JSX.Element => {
   const reviews = [
     {
       id: 1,
-      name: "Вадим Романов",
-      text: "Сделали все пиздато, буду брать еще, топчик компания",
-      image: "/image-2-1.png",
+      name: "Антон Кузнецов",
+      text: "Отличная компания, качественно выполнили все работы. Обязательно обращусь снова!",
+      image: "/360_F_118124400_dJVcyLOxzDViOg57o19suHnfbXjRsT1M.jpg",
       imagePosition: "left",
     },
     {
       id: 2,
-      name: "Дмитрий Рябов",
-      text: "ахуенно отпалировали очко, илюха топовый работник, на выходных заеду еще раз",
-      image: "/image-3-1.png",
+      name: "Игорь Смирнов",
+      text: "Прекрасно выполнили все работы, очень доволен результатом. Илья - отличный специалист, обязательно обращусь снова!",
+      image: "/360_F_118124400_dJVcyLOxzDViOg57o19suHnfbXjRsT1M.jpg",
       imagePosition: "right",
     },
   ];

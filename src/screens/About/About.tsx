@@ -9,28 +9,28 @@ export const About = (): JSX.Element => {
       id: 1,
       name: "Александр Петров",
       position: "Главный инженер",
-      photo: "/image-2-1.png",
+      photo: "/360_F_118124400_dJVcyLOxzDViOg57o19suHnfbXjRsT1M.jpg",
       experience: "Опыт работы более 10 лет. Специализируется на проектировании и планировании ремонтных работ."
     },
     {
       id: 2,
       name: "Елена Смирнова",
       position: "Дизайнер интерьеров",
-      photo: "/image-3-1.png",
+      photo: "/360_F_118124400_dJVcyLOxzDViOg57o19suHnfbXjRsT1M.jpg",
       experience: "Опыт работы более 7 лет. Создает уникальные дизайн-проекты для жилых и коммерческих помещений."
     },
     {
       id: 3,
       name: "Дмитрий Иванов",
       position: "Прораб",
-      photo: "/image-2-2.png",
+      photo: "/360_F_118124400_dJVcyLOxzDViOg57o19suHnfbXjRsT1M.jpg",
       experience: "Опыт работы более 8 лет. Контролирует все этапы ремонтно-строительных работ."
     },
     {
       id: 4,
       name: "Ольга Козлова",
       position: "Менеджер проектов",
-      photo: "/image-2-3.png",
+      photo: "/360_F_118124400_dJVcyLOxzDViOg57o19suHnfbXjRsT1M.jpg",
       experience: "Опыт работы более 5 лет. Координирует работу команды и взаимодействие с клиентами."
     }
   ];
